@@ -1,4 +1,4 @@
-package com.maestrocoach.maestro_coach;
+package com.maestrocoach;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
