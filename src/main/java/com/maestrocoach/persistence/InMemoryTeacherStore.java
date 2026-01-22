@@ -1,9 +1,11 @@
 package com.maestrocoach.persistence;
 
 import com.maestrocoach.domain.Teacher;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+@Component
 public class InMemoryTeacherStore {
 
     private final Map<UUID, Teacher> teachers;
