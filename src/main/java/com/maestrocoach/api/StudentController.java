@@ -6,7 +6,6 @@ import com.maestrocoach.domain.Student;
 import com.maestrocoach.service.StudentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -30,10 +29,6 @@ public class StudentController {
     @PostMapping("/{studentId}/assign-teacher/{teacherId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void assignTeacher(@PathVariable UUID studentId, @PathVariable UUID teacherId) {
-        try {
-            studentService.assignStudentToTeacher(studentId, teacherId);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student or Teacher not found");
-        }
+        studentService.assignStudentToTeacher(studentId, teacherId);
     }
 }
