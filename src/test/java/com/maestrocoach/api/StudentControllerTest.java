@@ -49,6 +49,20 @@ class StudentControllerTest {
     }
 
     @Test
+    void createStudent_emptyInstrumentParameter_returns400() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("fullName", "Anna Bellman");
+        jsonObject.put("email", "anna@bellman.com");
+        jsonObject.put("instrument", "");
+
+        mockMvc.perform(post("/api/students").contentType(MediaType.APPLICATION_JSON).content(jsonObject.toString()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.path").value("/api/students"));
+    }
+
+    @Test
     void assignTeacher_returns204() throws Exception {
         Teacher t = new Teacher("John Doe", "john@school.com");
         Student s = new Student("Anna Bellman", "anna@bellman.com", "piano");

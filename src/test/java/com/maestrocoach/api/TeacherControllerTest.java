@@ -53,6 +53,19 @@ class TeacherControllerTest {
     }
 
     @Test
+    void createTeacher_invalidEmail_returns400() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("fullName", "John Doe");
+        jsonObject.put("email", "not-an-email");
+
+        mockMvc.perform(post("/api/teachers").contentType(MediaType.APPLICATION_JSON).content(jsonObject.toString()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.path").value("/api/teachers"));
+    }
+
+    @Test
     void allTeachersReturned() throws Exception {
         Teacher t1 = new Teacher("Charlie Chaplin", "charlie@school.com");
         Teacher t2 = new Teacher("David Kay", "david@school.com");
