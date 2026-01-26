@@ -1,6 +1,8 @@
 package com.maestrocoach.api;
 
+import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
+import com.maestrocoach.service.StudentService;
 import com.maestrocoach.service.TeacherService;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -29,6 +31,9 @@ class TeacherControllerTest {
 
     @MockitoBean
     private TeacherService service;
+
+    @MockitoBean
+    private StudentService studentService;
 
     @Test
     void createTeacher_returns201AndBody() throws Exception {
@@ -74,6 +79,47 @@ class TeacherControllerTest {
                 .thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/teachers/{teacherId}", randomId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getStudentsByTeacher_success() throws Exception {
+        Teacher t = new Teacher("John Doe", "john@school.com");
+        Student s1 = new Student("Anna Bellman", "anna@bellman.com", "piano");
+        Student s2 = new Student("Emma Schmidt", "emma@schmidt.com", "piano");
+
+        Mockito.when(service.getTeacherById(t.getId()))
+                .thenReturn(Optional.of(t));
+
+        s1.assignTeacher(t.getId());
+        s2.assignTeacher(t.getId());
+
+        Mockito.when(studentService.getStudentsByTeacher(t.getId()))
+                .thenReturn(List.of(s1, s2));
+
+        mockMvc.perform(get("/api/teachers/{teacherId}/students", t.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id").value(s1.getId().toString()))
+                .andExpect(jsonPath("$[0].fullName").value("Anna Bellman"))
+                .andExpect(jsonPath("$[0].email").value("anna@bellman.com"))
+                .andExpect(jsonPath("$[0].instrument").value("piano"))
+                .andExpect(jsonPath("$[0].teacherId").value(t.getId().toString()))
+                .andExpect(jsonPath("$[1].id").value(s2.getId().toString()))
+                .andExpect(jsonPath("$[1].fullName").value("Emma Schmidt"))
+                .andExpect(jsonPath("$[1].email").value("emma@schmidt.com"))
+                .andExpect(jsonPath("$[1].instrument").value("piano"))
+                .andExpect(jsonPath("$[1].teacherId").value(t.getId().toString()));
+    }
+
+    @Test
+    void getStudentsByTeacher_returnsNotFound() throws Exception {
+        UUID randomId = UUID.randomUUID();
+
+        Mockito.when(service.getTeacherById(randomId))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/teachers/{teacherId}/students", randomId))
                 .andExpect(status().isNotFound());
     }
 }
