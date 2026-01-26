@@ -7,6 +7,7 @@ import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
 import com.maestrocoach.service.StudentService;
 import com.maestrocoach.service.TeacherService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,7 +30,7 @@ public class TeacherController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TeacherResponse createTeacher(@RequestBody CreateTeacherRequest request) {
+    public TeacherResponse createTeacher(@RequestBody @Valid CreateTeacherRequest request) {
         Teacher teacher = teacherService.createTeacher(request.fullName(), request.email());
         return new TeacherResponse(teacher.getId(), teacher.getFullName(), teacher.getEmail());
     }

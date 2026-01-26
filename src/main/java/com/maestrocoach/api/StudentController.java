@@ -4,6 +4,7 @@ import com.maestrocoach.api.dto.CreateStudentRequest;
 import com.maestrocoach.api.dto.StudentResponse;
 import com.maestrocoach.domain.Student;
 import com.maestrocoach.service.StudentService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class StudentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public StudentResponse createStudent(@RequestBody CreateStudentRequest request) {
+    public StudentResponse createStudent(@RequestBody @Valid CreateStudentRequest request) {
         Student student = studentService.createStudent(request.fullName(), request.email(), request.instrument());
         return new StudentResponse(student.getId(), student.getFullName(), student.getEmail(), student.getInstrument(), student.getTeacherId());
     }
