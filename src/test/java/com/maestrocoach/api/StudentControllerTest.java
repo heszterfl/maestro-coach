@@ -2,6 +2,7 @@ package com.maestrocoach.api;
 
 import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
+import com.maestrocoach.service.AssignmentService;
 import com.maestrocoach.service.StudentService;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,9 @@ class StudentControllerTest {
 
     @MockitoBean
     private StudentService service;
+
+    @MockitoBean
+    private AssignmentService assignmentService;
 
     @Test
     void createStudent_returns201AndBody() throws Exception {

@@ -40,4 +40,8 @@ public class StudentService {
     public List<Student> getStudentsByTeacher(UUID teacherId) {
         return studentStore.findByTeacherId(teacherId);
     }
+
+    public Optional<Student> getStudentById(UUID studentId) {
+        return studentStore.findById(studentId);
+    }
 }

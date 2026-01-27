@@ -1,13 +1,19 @@
 package com.maestrocoach.api;
 
+import com.maestrocoach.api.dto.AssignmentResponse;
 import com.maestrocoach.api.dto.CreateStudentRequest;
 import com.maestrocoach.api.dto.StudentResponse;
+import com.maestrocoach.domain.Assignment;
 import com.maestrocoach.domain.Student;
+import com.maestrocoach.service.AssignmentService;
 import com.maestrocoach.service.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -15,9 +21,11 @@ import java.util.UUID;
 public class StudentController {
 
     private final StudentService studentService;
+    private final AssignmentService assignmentService;
 
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService, AssignmentService assignmentService) {
         this.studentService = studentService;
+        this.assignmentService = assignmentService;
     }
 
     @PostMapping
@@ -31,5 +39,22 @@ public class StudentController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void assignTeacher(@PathVariable UUID studentId, @PathVariable UUID teacherId) {
         studentService.assignStudentToTeacher(studentId, teacherId);
+    }
+
+    @GetMapping("/{studentId}/assignments")
+    public List<AssignmentResponse> listAssignmentsByStudent(@PathVariable UUID studentId) {
+
+        if (studentService.getStudentById(studentId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        }
+
+        List<Assignment> assignmentList = assignmentService.getAssignmentsByStudent(studentId);
+        List<AssignmentResponse> responseList = new ArrayList<>();
+
+        for (Assignment assignment : assignmentList) {
+            AssignmentResponse response = new AssignmentResponse(assignment.getId(), assignment.getStudentId(), assignment.getLearningItemId(), assignment.getStatus());
+            responseList.add(response);
+        }
+        return responseList;
     }
 }
