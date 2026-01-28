@@ -40,4 +40,11 @@ public class AssignmentService {
     public List<Assignment> getAssignmentsByStudent(UUID studentId) {
         return assignmentStore.findByStudentId(studentId);
     }
+
+    public void completeAssignment(UUID assignmentId) {
+        Assignment assignment = assignmentStore.findById(assignmentId)
+                .orElseThrow(IllegalArgumentException::new);
+        assignment.markCompleted();
+        assignmentStore.save(assignment);
+    }
 }

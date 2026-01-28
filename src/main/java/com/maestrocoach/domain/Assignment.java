@@ -16,6 +16,10 @@ public class Assignment {
         this.status = AssignmentStatus.ASSIGNED;
     }
 
+    public void markCompleted() {
+        this.status = AssignmentStatus.COMPLETED;
+    }
+
     public UUID getId() {
         return id;
     }
