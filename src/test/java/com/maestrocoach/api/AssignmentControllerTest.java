@@ -74,4 +74,24 @@ public class AssignmentControllerTest {
         mockMvc.perform(post("/api/assignments").contentType(MediaType.APPLICATION_JSON).content(jsonObject.toString()))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void completeAssignment_returns204() throws Exception {
+        UUID randomId = UUID.randomUUID();
+
+        Mockito.doNothing().when(assignmentService).completeAssignment(randomId);
+
+        mockMvc.perform(post("/api/assignments/{assignmentId}/complete", randomId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void completeAssignment_notFound_returns404() throws Exception {
+        UUID randomId = UUID.randomUUID();
+
+        Mockito.doThrow(IllegalArgumentException.class).when(assignmentService).completeAssignment(randomId);
+
+        mockMvc.perform(post("/api/assignments/{assignmentId}/complete", randomId))
+                .andExpect(status().isNotFound());
+    }
 }
