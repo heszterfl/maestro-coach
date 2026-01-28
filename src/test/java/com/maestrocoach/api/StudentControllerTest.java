@@ -1,5 +1,6 @@
 package com.maestrocoach.api;
 
+import com.maestrocoach.domain.Assignment;
 import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
 import com.maestrocoach.service.AssignmentService;
@@ -13,9 +14,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -85,6 +90,44 @@ class StudentControllerTest {
         Mockito.doThrow(IllegalArgumentException.class).when(service).assignStudentToTeacher(s.getId(), randomId);
 
         mockMvc.perform(post("/api/students/{studentId}/assign-teacher/{teacherId}", s.getId(), randomId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getAssignmentsByStudent_returns200AndList() throws Exception {
+        Student s = new Student("Anna Bellman", "anna@bellman.com", "piano");
+        UUID itemId1 = UUID.randomUUID();
+        UUID itemId2 = UUID.randomUUID();
+        Assignment a1 = new Assignment(s.getId(), itemId1);
+        Assignment a2 = new Assignment(s.getId(), itemId2);
+
+        Mockito.when(service.getStudentById(s.getId()))
+                .thenReturn(Optional.of(s));
+        Mockito.when(assignmentService.getAssignmentsByStudent(s.getId()))
+                .thenReturn(List.of(a1, a2));
+
+        mockMvc.perform(get("/api/students/{studentId}/assignments", s.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id").value(a1.getId().toString()))
+                .andExpect(jsonPath("$[0].studentId").value(a1.getStudentId().toString()))
+                .andExpect(jsonPath("$[0].learningItemId").value(a1.getLearningItemId().toString()))
+                .andExpect(jsonPath("$[0].status").value("ASSIGNED"))
+                .andExpect(jsonPath("$[1].id").value(a2.getId().toString()))
+                .andExpect(jsonPath("$[1].studentId").value(a2.getStudentId().toString()))
+                .andExpect(jsonPath("$[1].learningItemId").value(a2.getLearningItemId().toString()))
+                .andExpect(jsonPath("$[1].status").value("ASSIGNED"));
+
+    }
+
+    @Test
+    void getAssignmentsByStudent_studentNotFound_returns404() throws Exception {
+        UUID studentId = UUID.randomUUID();
+
+        Mockito.when(service.getStudentById(studentId))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/students/{studentId}/assignments", studentId))
                 .andExpect(status().isNotFound());
     }
 }
