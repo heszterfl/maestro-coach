@@ -1,6 +1,7 @@
 package com.maestrocoach.api;
 
 import com.maestrocoach.domain.Assignment;
+import com.maestrocoach.domain.AssignmentStatus;
 import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
 import com.maestrocoach.service.AssignmentService;
@@ -129,5 +130,45 @@ class StudentControllerTest {
 
         mockMvc.perform(get("/api/students/{studentId}/assignments", studentId))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getAssignmentsByStudent_statusAssigned_returns200AndFilteredList() throws Exception {
+        Student s = new Student("Anna Bellman", "anna@bellman.com", "piano");
+        Assignment a1 = new Assignment(s.getId(), UUID.randomUUID());
+        Assignment a2 = new Assignment(s.getId(), UUID.randomUUID());
+
+        Mockito.when(service.getStudentById(s.getId()))
+                        .thenReturn(Optional.of(s));
+
+        Mockito.when(assignmentService.getAssignmentsByStudent(s.getId(), AssignmentStatus.ASSIGNED))
+                .thenReturn(List.of(a1, a2));
+
+        mockMvc.perform(get("/api/students/{studentId}/assignments?status=ASSIGNED", s.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+
+        Mockito.verify(assignmentService).getAssignmentsByStudent(s.getId(), AssignmentStatus.ASSIGNED);
+    }
+
+    @Test
+    void getAssignmentsByStudent_statusCompleted_returns200AndFilteredList() throws Exception {
+        Student s = new Student("Anna Bellman", "anna@bellman.com", "piano");
+        Assignment a1 = new Assignment(s.getId(), UUID.randomUUID());
+        Assignment a2 = new Assignment(s.getId(), UUID.randomUUID());
+        a1.markCompleted();
+        a2.markCompleted();
+
+        Mockito.when(service.getStudentById(s.getId()))
+                .thenReturn(Optional.of(s));
+
+        Mockito.when(assignmentService.getAssignmentsByStudent(s.getId(), AssignmentStatus.COMPLETED))
+                .thenReturn(List.of(a1, a2));
+
+        mockMvc.perform(get("/api/students/{studentId}/assignments?status=COMPLETED", s.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+
+        Mockito.verify(assignmentService).getAssignmentsByStudent(s.getId(), AssignmentStatus.COMPLETED);
     }
 }
