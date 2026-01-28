@@ -4,6 +4,7 @@ import com.maestrocoach.api.dto.AssignmentResponse;
 import com.maestrocoach.api.dto.CreateStudentRequest;
 import com.maestrocoach.api.dto.StudentResponse;
 import com.maestrocoach.domain.Assignment;
+import com.maestrocoach.domain.AssignmentStatus;
 import com.maestrocoach.domain.Student;
 import com.maestrocoach.service.AssignmentService;
 import com.maestrocoach.service.StudentService;
@@ -42,15 +43,20 @@ public class StudentController {
     }
 
     @GetMapping("/{studentId}/assignments")
-    public List<AssignmentResponse> listAssignmentsByStudent(@PathVariable UUID studentId) {
+    public List<AssignmentResponse> listAssignmentsByStudent(@PathVariable UUID studentId, @RequestParam(required = false) AssignmentStatus status) {
 
         if (studentService.getStudentById(studentId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
         }
 
-        List<Assignment> assignmentList = assignmentService.getAssignmentsByStudent(studentId);
-        List<AssignmentResponse> responseList = new ArrayList<>();
+        List<Assignment> assignmentList;
+        if (status == null) {
+            assignmentList = assignmentService.getAssignmentsByStudent(studentId);
+        } else {
+            assignmentList = assignmentService.getAssignmentsByStudent(studentId, status);
+        }
 
+        List<AssignmentResponse> responseList = new ArrayList<>();
         for (Assignment assignment : assignmentList) {
             AssignmentResponse response = new AssignmentResponse(assignment.getId(), assignment.getStudentId(), assignment.getLearningItemId(), assignment.getStatus());
             responseList.add(response);

@@ -1,6 +1,7 @@
 package com.maestrocoach.service;
 
 import com.maestrocoach.domain.Assignment;
+import com.maestrocoach.domain.AssignmentStatus;
 import com.maestrocoach.domain.LearningItem;
 import com.maestrocoach.domain.Student;
 import com.maestrocoach.persistence.InMemoryAssignmentStore;
@@ -8,6 +9,7 @@ import com.maestrocoach.persistence.InMemoryLearningItemStore;
 import com.maestrocoach.persistence.InMemoryStudentStore;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +41,18 @@ public class AssignmentService {
 
     public List<Assignment> getAssignmentsByStudent(UUID studentId) {
         return assignmentStore.findByStudentId(studentId);
+    }
+
+    public List<Assignment> getAssignmentsByStudent(UUID studentId, AssignmentStatus status) {
+        List<Assignment> assignmentList = assignmentStore.findByStudentId(studentId);
+        List<Assignment> filtered = new ArrayList<>();
+
+        for (Assignment assignment : assignmentList) {
+            if (assignment.getStatus() == status) {
+                filtered.add(assignment);
+            }
+        }
+        return filtered;
     }
 
     public void completeAssignment(UUID assignmentId) {
