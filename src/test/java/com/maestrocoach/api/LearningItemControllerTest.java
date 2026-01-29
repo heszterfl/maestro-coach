@@ -18,8 +18,7 @@ import java.util.UUID;
 import static com.maestrocoach.domain.LearningCategory.INSTRUMENT_PRACTICE;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -94,6 +93,26 @@ class LearningItemControllerTest {
                         .thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/learning-items/{learningItemId}", randomId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteLearningItem_returns204() throws Exception {
+        UUID randomId = UUID.randomUUID();
+
+        Mockito.doNothing().when(service).deleteLearningItem(randomId);
+
+        mockMvc.perform(delete("/api/learning-items/{learningItemId}", randomId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteLearningItem_notFound_returns404() throws Exception {
+        UUID randomId = UUID.randomUUID();
+
+        Mockito.doThrow(IllegalArgumentException.class).when(service).deleteLearningItem(randomId);
+
+        mockMvc.perform(delete("/api/learning-items/{learningItemId}", randomId))
                 .andExpect(status().isNotFound());
     }
 }
