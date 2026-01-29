@@ -47,4 +47,11 @@ public class LearningItemController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Learning item not found"));
         return new LearningItemResponse(item.getId(), item.getTitle(), item.getCategory(), item.getDescription());
     }
+
+
+    @DeleteMapping("/{learningItemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deleteLearningItem(@PathVariable UUID learningItemId) {
+        service.deleteLearningItem(learningItemId);
+    }
 }

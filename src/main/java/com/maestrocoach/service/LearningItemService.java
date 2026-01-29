@@ -30,4 +30,12 @@ public class LearningItemService {
     public List<LearningItem> getAllLearningItems() {
         return store.findAll();
     }
+
+    public void deleteLearningItem(UUID id) {
+        if (store.findById(id).isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        store.deleteById(id);
+    }
 }
