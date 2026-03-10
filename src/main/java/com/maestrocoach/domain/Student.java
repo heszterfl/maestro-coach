@@ -20,10 +20,18 @@ public class Student {
     @Column(nullable = false)
     private String instrument;
 
-    @Transient
-    private UUID teacherId;
+    @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    private Teacher teacher;
 
     public Student() {
+    }
+
+    public Student(UUID id, String fullName, String email, String instrument) {
+        this.id = id;
+        this.fullName = fullName;
+        this.email = email;
+        this.instrument = instrument;
     }
 
     public Student(String fullName, String email, String instrument) {
@@ -61,11 +69,11 @@ public class Student {
         this.instrument = instrument;
     }
 
-    public UUID getTeacherId() {
-        return teacherId;
+    public Teacher getTeacher() {
+        return teacher;
     }
 
-    public void assignTeacher(UUID teacherId) {
-        this.teacherId = teacherId;
+    public void assignTeacher(Teacher teacher) {
+        this.teacher = teacher;
     }
 }

@@ -31,7 +31,8 @@ public class InMemoryStudentStore {
         List<Student> studentList = new ArrayList<>();
 
         for (Student student : students.values()) {
-            if (Objects.equals(student.getTeacherId(), teacherId)) {
+            if (student.getTeacher() != null &&
+                    Objects.equals(student.getTeacher().getId(), teacherId)) {
                 studentList.add(student);
             }
         }

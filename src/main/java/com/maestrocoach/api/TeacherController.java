@@ -62,7 +62,7 @@ public class TeacherController {
         List<Student> studentList = studentService.getStudentsByTeacher(teacherId);
         List<StudentResponse> responseList = new ArrayList<>();
         for (Student student : studentList) {
-            StudentResponse response = new StudentResponse(student.getId(), student.getFullName(), student.getEmail(), student.getInstrument(), student.getTeacherId());
+            StudentResponse response = new StudentResponse(student.getId(), student.getFullName(), student.getEmail(), student.getInstrument(), student.getTeacher() != null ? student.getTeacher().getId() : null);
             responseList.add(response);
         }
 

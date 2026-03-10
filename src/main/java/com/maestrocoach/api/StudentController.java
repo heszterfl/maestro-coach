@@ -33,7 +33,7 @@ public class StudentController {
     @ResponseStatus(HttpStatus.CREATED)
     public StudentResponse createStudent(@RequestBody @Valid CreateStudentRequest request) {
         Student student = studentService.createStudent(request.fullName(), request.email(), request.instrument());
-        return new StudentResponse(student.getId(), student.getFullName(), student.getEmail(), student.getInstrument(), student.getTeacherId());
+        return new StudentResponse(student.getId(), student.getFullName(), student.getEmail(), student.getInstrument(), student.getTeacher() != null ? student.getTeacher().getId() : null);
     }
 
     @PostMapping("/{studentId}/assign-teacher/{teacherId}")

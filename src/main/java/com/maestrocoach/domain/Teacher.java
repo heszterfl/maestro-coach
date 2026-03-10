@@ -1,16 +1,37 @@
 package com.maestrocoach.domain;
 
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+@Entity
+@Table(name = "teachers")
 public class Teacher {
 
-    private final UUID id;
+    @Id
+    private UUID id;
+
+    @Column(name = "full_name", nullable = false)
     private String fullName;
+
+    @Column(nullable = false)
     private String email;
-    private final List<Student> students;
+
+    @Transient
+    private List<Student> students;
+
+    public Teacher() {
+        this.students = new ArrayList<>();
+    }
+
+    public Teacher(UUID id, String fullName, String email) {
+        this.id = id;
+        this.fullName = fullName;
+        this.email = email;
+    }
 
     public Teacher(String fullName, String email) {
         this.id = UUID.randomUUID();
