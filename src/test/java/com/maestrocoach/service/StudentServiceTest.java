@@ -4,7 +4,9 @@ import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
 import com.maestrocoach.persistence.InMemoryStudentStore;
 import com.maestrocoach.persistence.InMemoryTeacherStore;
+import com.maestrocoach.repository.StudentRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.UUID;
 
@@ -16,7 +18,12 @@ public class StudentServiceTest {
     void createStudent_success() {
         InMemoryStudentStore studentStore = new InMemoryStudentStore();
         InMemoryTeacherStore teacherStore = new InMemoryTeacherStore();
-        StudentService studentService = new StudentService(studentStore, teacherStore);
+        StudentRepository studentRepository = Mockito.mock(StudentRepository.class);
+
+        Mockito.when(studentRepository.save(Mockito.any(Student.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        StudentService studentService = new StudentService(studentStore, teacherStore, studentRepository);
 
         Student student = studentService.createStudent("Anna Bellman", "anna@bellman.com", "piano");
 
@@ -24,17 +31,19 @@ public class StudentServiceTest {
         assertEquals("Anna Bellman", student.getFullName());
         assertEquals("anna@bellman.com", student.getEmail());
         assertEquals("piano", student.getInstrument());
-        assertEquals(1, studentStore.findAll().size());
+
+        Mockito.verify(studentRepository).save(Mockito.any(Student.class));
     }
 
     @Test
     void assignStudentToTeacher_success() {
         InMemoryStudentStore studentStore = new InMemoryStudentStore();
         InMemoryTeacherStore teacherStore = new InMemoryTeacherStore();
-        StudentService studentService = new StudentService(studentStore, teacherStore);
+        StudentRepository studentRepository = Mockito.mock(StudentRepository.class);
+        StudentService studentService = new StudentService(studentStore, teacherStore, studentRepository);
 
         Teacher teacher = teacherStore.save(new Teacher("John Doe", "john@school.com"));
-        Student student = studentService.createStudent("Anna Bellman", "anna@bellman.com", "piano");
+        Student student = studentStore.save(new Student("Anna Bellman", "anna@bellman.com", "piano"));
 
         assertNull(student.getTeacherId());
 
@@ -49,7 +58,8 @@ public class StudentServiceTest {
     void assignStudentToTeacher_studentNotFound_throwsIllegalArgumentException() {
         InMemoryStudentStore studentStore = new InMemoryStudentStore();
         InMemoryTeacherStore teacherStore = new InMemoryTeacherStore();
-        StudentService studentService = new StudentService(studentStore, teacherStore);
+        StudentRepository studentRepository = Mockito.mock(StudentRepository.class);
+        StudentService studentService = new StudentService(studentStore, teacherStore, studentRepository);
 
         Teacher teacher = teacherStore.save(new Teacher("John Doe", "john@school.com"));
         UUID randomStudentId = UUID.randomUUID();
@@ -61,9 +71,10 @@ public class StudentServiceTest {
     void assignStudentToTeacher_teacherNotFound_throwsIllegalArgumentException() {
         InMemoryStudentStore studentStore = new InMemoryStudentStore();
         InMemoryTeacherStore teacherStore = new InMemoryTeacherStore();
-        StudentService studentService = new StudentService(studentStore, teacherStore);
+        StudentRepository studentRepository = Mockito.mock(StudentRepository.class);
+        StudentService studentService = new StudentService(studentStore, teacherStore, studentRepository);
 
-        Student student = studentService.createStudent("Anna Bellman", "anna@bellman.com", "piano");
+        Student student = studentStore.save(new Student("Anna Bellman", "anna@bellman.com", "piano"));
         UUID randomTeacherId = UUID.randomUUID();
 
         assertThrows(IllegalArgumentException.class, () -> studentService.assignStudentToTeacher(student.getId(), randomTeacherId));

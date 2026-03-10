@@ -4,6 +4,7 @@ import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
 import com.maestrocoach.persistence.InMemoryStudentStore;
 import com.maestrocoach.persistence.InMemoryTeacherStore;
+import com.maestrocoach.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,15 +16,18 @@ public class StudentService {
 
     private final InMemoryStudentStore studentStore;
     private final InMemoryTeacherStore teacherStore;
+    private final StudentRepository studentRepository;
 
-    public StudentService(InMemoryStudentStore studentStore, InMemoryTeacherStore teacherStore) {
+    public StudentService(InMemoryStudentStore studentStore, InMemoryTeacherStore teacherStore,
+                          StudentRepository studentRepository) {
         this.studentStore = studentStore;
         this.teacherStore = teacherStore;
+        this.studentRepository = studentRepository;
     }
 
     public Student createStudent(String fullName, String email, String instrument) {
         Student newStudent = new Student(fullName, email, instrument);
-        return studentStore.save(newStudent);
+        return studentRepository.save(newStudent);
     }
 
     public void assignStudentToTeacher(UUID studentId, UUID teacherId) {
