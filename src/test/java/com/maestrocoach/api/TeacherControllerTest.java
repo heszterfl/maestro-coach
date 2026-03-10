@@ -104,8 +104,8 @@ class TeacherControllerTest {
         Mockito.when(service.getTeacherById(t.getId()))
                 .thenReturn(Optional.of(t));
 
-        s1.assignTeacher(t.getId());
-        s2.assignTeacher(t.getId());
+        s1.assignTeacher(t);
+        s2.assignTeacher(t);
 
         Mockito.when(studentService.getStudentsByTeacher(t.getId()))
                 .thenReturn(List.of(s1, s2));
