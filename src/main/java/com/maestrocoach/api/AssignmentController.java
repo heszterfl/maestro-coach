@@ -24,7 +24,7 @@ public class AssignmentController {
     @ResponseStatus(HttpStatus.CREATED)
     public AssignmentResponse createAssignment(@RequestBody @Valid CreateAssignmentRequest request) {
         Assignment assignment = assignmentService.createAssignment(request.studentId(), request.learningItemId());
-        return new AssignmentResponse(assignment.getId(), assignment.getStudentId(), assignment.getLearningItemId(), assignment.getStatus());
+        return new AssignmentResponse(assignment.getId(), assignment.getStudent().getId(), assignment.getLearningItem().getId(), assignment.getStatus());
     }
 
     @PostMapping("/{assignmentId}/complete")
