@@ -1,6 +1,8 @@
 package com.maestrocoach.api;
 
 import com.maestrocoach.domain.Assignment;
+import com.maestrocoach.domain.LearningItem;
+import com.maestrocoach.domain.Student;
 import com.maestrocoach.service.AssignmentService;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static com.maestrocoach.domain.LearningCategory.INSTRUMENT_PRACTICE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,21 +31,21 @@ public class AssignmentControllerTest {
 
     @Test
     void createAssignment_returns201AndBody() throws Exception {
-        UUID studentId = UUID.randomUUID();
-        UUID learningItemId = UUID.randomUUID();
-        Assignment a = new Assignment(studentId, learningItemId);
+        Student student = new Student("Anna Bellman", "anna@bellman.com", "piano");
+        LearningItem learningItem = new LearningItem("C-Dúr Etűd", INSTRUMENT_PRACTICE, null);
+        Assignment a = new Assignment(student, learningItem);
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("studentId", studentId.toString());
-        jsonObject.put("learningItemId", learningItemId.toString());
+        jsonObject.put("studentId", student.getId().toString());
+        jsonObject.put("learningItemId", learningItem.getId().toString());
 
-        Mockito.when(assignmentService.createAssignment(a.getStudentId(), a.getLearningItemId()))
+        Mockito.when(assignmentService.createAssignment(student.getId(), learningItem.getId()))
                 .thenReturn(a);
 
         mockMvc.perform(post("/api/assignments").contentType(MediaType.APPLICATION_JSON).content(jsonObject.toString()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(a.getId().toString()))
-                .andExpect(jsonPath("$.studentId").value(a.getStudentId().toString()))
-                .andExpect(jsonPath("$.learningItemId").value(a.getLearningItemId().toString()))
+                .andExpect(jsonPath("$.studentId").value(a.getStudent().getId().toString()))
+                .andExpect(jsonPath("$.learningItemId").value(a.getLearningItem().getId().toString()))
                 .andExpect(jsonPath("$.status").value("ASSIGNED"));
     }
 
@@ -62,14 +65,14 @@ public class AssignmentControllerTest {
 
     @Test
     void createAssignment_studentNotFound_returns404() throws Exception {
-        UUID studentId = UUID.randomUUID();
-        UUID learningItemId = UUID.randomUUID();
-        Assignment a = new Assignment(studentId, learningItemId);
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("studentId", studentId.toString());
-        jsonObject.put("learningItemId", learningItemId.toString());
+        Student student = new Student("Anna Bellman", "anna@bellman.com", "piano");
+        LearningItem learningItem = new LearningItem("C-Dúr Etűd", INSTRUMENT_PRACTICE, null);
 
-        Mockito.doThrow(IllegalArgumentException.class).when(assignmentService).createAssignment(studentId, learningItemId);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("studentId", student.getId().toString());
+        jsonObject.put("learningItemId", learningItem.getId().toString());
+
+        Mockito.doThrow(IllegalArgumentException.class).when(assignmentService).createAssignment(student.getId(), learningItem.getId());
 
         mockMvc.perform(post("/api/assignments").contentType(MediaType.APPLICATION_JSON).content(jsonObject.toString()))
                 .andExpect(status().isNotFound());

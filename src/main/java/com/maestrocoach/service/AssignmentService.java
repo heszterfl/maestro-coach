@@ -35,7 +35,7 @@ public class AssignmentService {
             throw new IllegalArgumentException();
         }
 
-        Assignment assignment = new Assignment(studentId, learningItemId);
+        Assignment assignment = new Assignment(studentOptional.get(), learningItemOptional.get());
         return assignmentStore.save(assignment);
     }
 

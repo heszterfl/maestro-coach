@@ -31,7 +31,7 @@ public class InMemoryAssignmentStore {
         List<Assignment> assignmentList = new ArrayList<>();
 
         for (Assignment assignment : assignments.values()) {
-            if (Objects.equals(assignment.getStudentId(), studentId)) {
+            if (Objects.equals(assignment.getStudent().getId(), studentId)) {
                 assignmentList.add(assignment);
             }
         }

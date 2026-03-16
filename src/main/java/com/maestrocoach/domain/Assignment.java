@@ -1,18 +1,35 @@
 package com.maestrocoach.domain;
 
+import jakarta.persistence.*;
+
 import java.util.UUID;
 
+@Entity
+@Table(name = "assignments")
 public class Assignment {
 
+    @Id
     private UUID id;
-    private UUID studentId;
-    private UUID learningItemId;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
+
+    @ManyToOne
+    @JoinColumn(name = "item_id", nullable = false)
+    private LearningItem learningItem;
+
+    @Column
+    @Enumerated(EnumType.STRING)
     private AssignmentStatus status;
 
-    public Assignment(UUID studentId, UUID learningItemId) {
+    public Assignment() {
+    }
+
+    public Assignment(Student student, LearningItem learningItem) {
         this.id = UUID.randomUUID();
-        this.studentId = studentId;
-        this.learningItemId = learningItemId;
+        this.student = student;
+        this.learningItem = learningItem;
         this.status = AssignmentStatus.ASSIGNED;
     }
 
@@ -24,12 +41,12 @@ public class Assignment {
         return id;
     }
 
-    public UUID getStudentId() {
-        return studentId;
+    public Student getStudent() {
+        return student;
     }
 
-    public UUID getLearningItemId() {
-        return learningItemId;
+    public LearningItem getLearningItem() {
+        return learningItem;
     }
 
     public AssignmentStatus getStatus() {
