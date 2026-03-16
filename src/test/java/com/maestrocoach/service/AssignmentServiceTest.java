@@ -33,8 +33,8 @@ public class AssignmentServiceTest {
         Assignment assignment = assignmentService.createAssignment(student.getId(), learningItem.getId());
 
         assertEquals(AssignmentStatus.ASSIGNED, assignment.getStatus());
-        assertEquals(student.getId(), assignment.getStudentId());
-        assertEquals(learningItem.getId(), assignment.getLearningItemId());
+        assertEquals(student.getId(), assignment.getStudent().getId());
+        assertEquals(learningItem.getId(), assignment.getLearningItem().getId());
         assertEquals(1, assignmentStore.findAll().size());
     }
 
@@ -89,7 +89,7 @@ public class AssignmentServiceTest {
         List<Assignment> assignmentList = assignmentService.getAssignmentsByStudent(student.getId(), AssignmentStatus.ASSIGNED);
 
         assertEquals(2, assignmentList.size());
-        assertTrue(assignmentList.stream().allMatch(a -> a.getStudentId().equals(student.getId())));
+        assertTrue(assignmentList.stream().allMatch(a -> a.getStudent().getId().equals(student.getId())));
         assertTrue(assignmentList.stream().allMatch(a -> a.getStatus() == AssignmentStatus.ASSIGNED));
     }
 
@@ -114,7 +114,7 @@ public class AssignmentServiceTest {
 
         assertEquals(1, assignmentList.size());
         assertEquals(assignment.getId(), assignmentList.get(0).getId());
-        assertTrue(assignmentList.stream().allMatch(a -> a.getStudentId().equals(student.getId())));
+        assertTrue(assignmentList.stream().allMatch(a -> a.getStudent().getId().equals(student.getId())));
         assertTrue(assignmentList.stream().allMatch(a -> a.getStatus() == AssignmentStatus.COMPLETED));
     }
 
@@ -126,7 +126,9 @@ public class AssignmentServiceTest {
 
         AssignmentService assignmentService = new AssignmentService(assignmentStore, studentStore, learningItemStore);
 
-        Assignment assignment = new Assignment(UUID.randomUUID(), UUID.randomUUID());
+        Student student = new Student("Anna Bellman", "anna@bellman.com", "piano");
+        LearningItem learningItem = new LearningItem("C-Dúr Etűd", INSTRUMENT_PRACTICE, null);
+        Assignment assignment = new Assignment(student, learningItem);
         assignmentStore.save(assignment);
 
         assignmentService.completeAssignment(assignment.getId());

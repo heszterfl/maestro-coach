@@ -58,7 +58,7 @@ public class StudentController {
 
         List<AssignmentResponse> responseList = new ArrayList<>();
         for (Assignment assignment : assignmentList) {
-            AssignmentResponse response = new AssignmentResponse(assignment.getId(), assignment.getStudentId(), assignment.getLearningItemId(), assignment.getStatus());
+            AssignmentResponse response = new AssignmentResponse(assignment.getId(), assignment.getStudent().getId(), assignment.getLearningItem().getId(), assignment.getStatus());
             responseList.add(response);
         }
         return responseList;

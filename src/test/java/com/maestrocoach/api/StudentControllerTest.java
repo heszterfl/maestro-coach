@@ -1,9 +1,6 @@
 package com.maestrocoach.api;
 
-import com.maestrocoach.domain.Assignment;
-import com.maestrocoach.domain.AssignmentStatus;
-import com.maestrocoach.domain.Student;
-import com.maestrocoach.domain.Teacher;
+import com.maestrocoach.domain.*;
 import com.maestrocoach.service.AssignmentService;
 import com.maestrocoach.service.StudentService;
 import org.json.JSONObject;
@@ -19,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.maestrocoach.domain.LearningCategory.INSTRUMENT_PRACTICE;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -97,10 +95,10 @@ class StudentControllerTest {
     @Test
     void getAssignmentsByStudent_returns200AndList() throws Exception {
         Student s = new Student("Anna Bellman", "anna@bellman.com", "piano");
-        UUID itemId1 = UUID.randomUUID();
-        UUID itemId2 = UUID.randomUUID();
-        Assignment a1 = new Assignment(s.getId(), itemId1);
-        Assignment a2 = new Assignment(s.getId(), itemId2);
+        LearningItem learningItem1 = new LearningItem("C-Dúr Etűd", INSTRUMENT_PRACTICE, null);
+        LearningItem learningItem2 = new LearningItem("F-Dúr Etűd", INSTRUMENT_PRACTICE, null);
+        Assignment a1 = new Assignment(s, learningItem1);
+        Assignment a2 = new Assignment(s, learningItem2);
 
         Mockito.when(service.getStudentById(s.getId()))
                 .thenReturn(Optional.of(s));
@@ -111,12 +109,12 @@ class StudentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id").value(a1.getId().toString()))
-                .andExpect(jsonPath("$[0].studentId").value(a1.getStudentId().toString()))
-                .andExpect(jsonPath("$[0].learningItemId").value(a1.getLearningItemId().toString()))
+                .andExpect(jsonPath("$[0].studentId").value(a1.getStudent().getId().toString()))
+                .andExpect(jsonPath("$[0].learningItemId").value(a1.getLearningItem().getId().toString()))
                 .andExpect(jsonPath("$[0].status").value("ASSIGNED"))
                 .andExpect(jsonPath("$[1].id").value(a2.getId().toString()))
-                .andExpect(jsonPath("$[1].studentId").value(a2.getStudentId().toString()))
-                .andExpect(jsonPath("$[1].learningItemId").value(a2.getLearningItemId().toString()))
+                .andExpect(jsonPath("$[1].studentId").value(a2.getStudent().getId().toString()))
+                .andExpect(jsonPath("$[1].learningItemId").value(a2.getLearningItem().getId().toString()))
                 .andExpect(jsonPath("$[1].status").value("ASSIGNED"));
 
     }
@@ -135,8 +133,10 @@ class StudentControllerTest {
     @Test
     void getAssignmentsByStudent_statusAssigned_returns200AndFilteredList() throws Exception {
         Student s = new Student("Anna Bellman", "anna@bellman.com", "piano");
-        Assignment a1 = new Assignment(s.getId(), UUID.randomUUID());
-        Assignment a2 = new Assignment(s.getId(), UUID.randomUUID());
+        LearningItem learningItem1 = new LearningItem("C-Dúr Etűd", INSTRUMENT_PRACTICE, null);
+        LearningItem learningItem2 = new LearningItem("F-Dúr Etűd", INSTRUMENT_PRACTICE, null);
+        Assignment a1 = new Assignment(s, learningItem1);
+        Assignment a2 = new Assignment(s, learningItem2);
 
         Mockito.when(service.getStudentById(s.getId()))
                         .thenReturn(Optional.of(s));
@@ -154,8 +154,10 @@ class StudentControllerTest {
     @Test
     void getAssignmentsByStudent_statusCompleted_returns200AndFilteredList() throws Exception {
         Student s = new Student("Anna Bellman", "anna@bellman.com", "piano");
-        Assignment a1 = new Assignment(s.getId(), UUID.randomUUID());
-        Assignment a2 = new Assignment(s.getId(), UUID.randomUUID());
+        LearningItem learningItem1 = new LearningItem("C-Dúr Etűd", INSTRUMENT_PRACTICE, null);
+        LearningItem learningItem2 = new LearningItem("F-Dúr Etűd", INSTRUMENT_PRACTICE, null);
+        Assignment a1 = new Assignment(s, learningItem1);
+        Assignment a2 = new Assignment(s, learningItem2);
         a1.markCompleted();
         a2.markCompleted();
 
