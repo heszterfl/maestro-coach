@@ -4,61 +4,50 @@ import com.maestrocoach.domain.Assignment;
 import com.maestrocoach.domain.AssignmentStatus;
 import com.maestrocoach.domain.LearningItem;
 import com.maestrocoach.domain.Student;
-import com.maestrocoach.persistence.InMemoryAssignmentStore;
-import com.maestrocoach.persistence.InMemoryLearningItemStore;
-import com.maestrocoach.persistence.InMemoryStudentStore;
+import com.maestrocoach.repository.AssignmentRepository;
+import com.maestrocoach.repository.LearningItemRepository;
+import com.maestrocoach.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class AssignmentService {
 
-    private final InMemoryAssignmentStore assignmentStore;
-    private final InMemoryStudentStore studentStore;
-    private final InMemoryLearningItemStore learningItemStore;
+    private final AssignmentRepository assignmentRepository;
+    private final StudentRepository studentRepository;
+    private final LearningItemRepository learningItemRepository;
 
-    public AssignmentService(InMemoryAssignmentStore assignmentStore, InMemoryStudentStore studentStore, InMemoryLearningItemStore learningItemStore) {
-        this.assignmentStore = assignmentStore;
-        this.studentStore = studentStore;
-        this.learningItemStore = learningItemStore;
+    public AssignmentService(AssignmentRepository assignmentRepository, StudentRepository studentRepository, LearningItemRepository learningItemRepository) {
+        this.assignmentRepository = assignmentRepository;
+        this.studentRepository = studentRepository;
+        this.learningItemRepository = learningItemRepository;
     }
 
     public Assignment createAssignment(UUID studentId, UUID learningItemId) {
-        Optional<Student> studentOptional = studentStore.findById(studentId);
-        Optional<LearningItem> learningItemOptional = learningItemStore.findById(learningItemId);
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(IllegalArgumentException::new);
+        LearningItem learningItem = learningItemRepository.findById(learningItemId)
+                .orElseThrow(IllegalArgumentException::new);
 
-        if (studentOptional.isEmpty() || learningItemOptional.isEmpty()) {
-            throw new IllegalArgumentException();
-        }
-
-        Assignment assignment = new Assignment(studentOptional.get(), learningItemOptional.get());
-        return assignmentStore.save(assignment);
+        Assignment assignment = new Assignment(student, learningItem);
+        return assignmentRepository.save(assignment);
     }
 
     public List<Assignment> getAssignmentsByStudent(UUID studentId) {
-        return assignmentStore.findByStudentId(studentId);
+        return assignmentRepository.findByStudent_Id(studentId);
     }
 
     public List<Assignment> getAssignmentsByStudent(UUID studentId, AssignmentStatus status) {
-        List<Assignment> assignmentList = assignmentStore.findByStudentId(studentId);
-        List<Assignment> filtered = new ArrayList<>();
-
-        for (Assignment assignment : assignmentList) {
-            if (assignment.getStatus() == status) {
-                filtered.add(assignment);
-            }
-        }
-        return filtered;
+        return assignmentRepository.findByStudent_IdAndStatus(studentId, status);
     }
 
     public void completeAssignment(UUID assignmentId) {
-        Assignment assignment = assignmentStore.findById(assignmentId)
+        Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(IllegalArgumentException::new);
+
         assignment.markCompleted();
-        assignmentStore.save(assignment);
+        assignmentRepository.save(assignment);
     }
 }
