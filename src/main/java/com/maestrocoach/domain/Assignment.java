@@ -16,7 +16,7 @@ public class Assignment {
     private Student student;
 
     @ManyToOne
-    @JoinColumn(name = "item_id", nullable = false)
+    @JoinColumn(name = "learning_item_id", nullable = false)
     private LearningItem learningItem;
 
     @Column
