@@ -3,7 +3,6 @@ package com.maestrocoach.api;
 import com.maestrocoach.api.dto.CreateTeacherRequest;
 import com.maestrocoach.api.dto.StudentResponse;
 import com.maestrocoach.api.dto.TeacherResponse;
-import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
 import com.maestrocoach.service.StudentService;
 import com.maestrocoach.service.TeacherService;
@@ -11,7 +10,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,17 +34,18 @@ public class TeacherController {
 
     @GetMapping
     public List<TeacherResponse> getAllTeachers() {
-        List<TeacherResponse> responseList = new ArrayList<>();
-        List<Teacher> teacherList = teacherService.getAllTeachers();
-        for (Teacher teacher : teacherList) {
-            TeacherResponse response = new TeacherResponse(teacher.getId(), teacher.getFullName(), teacher.getEmail());
-            responseList.add(response);
-        }
-        return responseList;
+
+        return teacherService.getAllTeachers().stream()
+                .map(t -> new TeacherResponse(
+                        t.getId(),
+                        t.getFullName(),
+                        t.getEmail()
+                ))
+                .toList();
     }
 
     @GetMapping("/{teacherId}")
-    public TeacherResponse getTeacherById (@PathVariable UUID teacherId) {
+    public TeacherResponse getTeacherById(@PathVariable UUID teacherId) {
         Teacher teacher = teacherService.getTeacherById(teacherId);
         return new TeacherResponse(teacher.getId(), teacher.getFullName(), teacher.getEmail());
     }
@@ -54,14 +53,15 @@ public class TeacherController {
     @GetMapping("/{teacherId}/students")
     public List<StudentResponse> getStudentsByTeacher(@PathVariable UUID teacherId) {
 
-        List<Student> studentList = studentService.getStudentsByTeacher(teacherId);
-        List<StudentResponse> responseList = new ArrayList<>();
-        for (Student student : studentList) {
-            StudentResponse response = new StudentResponse(student.getId(), student.getFullName(), student.getEmail(), student.getInstrument(), student.getTeacher() != null ? student.getTeacher().getId() : null);
-            responseList.add(response);
-        }
-
-        return responseList;
+        return studentService.getStudentsByTeacher(teacherId).stream()
+                .map(s -> new StudentResponse(
+                        s.getId(),
+                        s.getFullName(),
+                        s.getEmail(),
+                        s.getInstrument(),
+                        s.getTeacher() != null ? s.getTeacher().getId() : null
+                ))
+                .toList();
     }
 
 }

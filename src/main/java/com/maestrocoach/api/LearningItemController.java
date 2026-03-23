@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,13 +30,15 @@ public class LearningItemController {
 
     @GetMapping
     public List<LearningItemResponse> getAllLearningItems() {
-        List<LearningItemResponse> responseList = new ArrayList<>();
-        List<LearningItem> itemList = service.getAllLearningItems();
-        for (LearningItem item : itemList) {
-            LearningItemResponse response = new LearningItemResponse(item.getId(), item.getTitle(), item.getCategory(), item.getDescription());
-            responseList.add(response);
-        }
-        return responseList;
+
+        return service.getAllLearningItems().stream()
+                .map(item -> new LearningItemResponse(
+                        item.getId(),
+                        item.getTitle(),
+                        item.getCategory(),
+                        item.getDescription()
+                ))
+                .toList();
     }
 
     @GetMapping("/{learningItemId}")
@@ -49,7 +50,7 @@ public class LearningItemController {
 
     @DeleteMapping("/{learningItemId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void deleteLearningItem(@PathVariable UUID learningItemId) {
+    public void deleteLearningItem(@PathVariable UUID learningItemId) {
         service.deleteLearningItem(learningItemId);
     }
 }

@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,7 +41,7 @@ public class StudentController {
     }
 
     @GetMapping("/{studentId}/assignments")
-    public List<AssignmentResponse> listAssignmentsByStudent(@PathVariable UUID studentId, @RequestParam(required = false) AssignmentStatus status) {
+    public List<AssignmentResponse> listAssignmentsByStudent(@PathVariable UUID studentId, @RequestParam(name = "status", required = false) AssignmentStatus status) {
 
         List<Assignment> assignmentList;
         if (status == null) {
@@ -51,11 +50,13 @@ public class StudentController {
             assignmentList = assignmentService.getAssignmentsByStudent(studentId, status);
         }
 
-        List<AssignmentResponse> responseList = new ArrayList<>();
-        for (Assignment assignment : assignmentList) {
-            AssignmentResponse response = new AssignmentResponse(assignment.getId(), assignment.getStudent().getId(), assignment.getLearningItem().getId(), assignment.getStatus());
-            responseList.add(response);
-        }
-        return responseList;
+        return assignmentList.stream()
+                .map(a -> new AssignmentResponse(
+                        a.getId(),
+                        a.getStudent().getId(),
+                        a.getLearningItem().getId(),
+                        a.getStatus()
+                ))
+                .toList();
     }
 }
