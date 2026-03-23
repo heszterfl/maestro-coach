@@ -170,7 +170,7 @@ public class AssignmentServiceTest {
         assertTrue(assignmentList.stream().allMatch(a -> a.getStudent().getId().equals(student.getId())));
         assertTrue(assignmentList.stream().allMatch(a -> a.getStatus() == AssignmentStatus.COMPLETED));
 
-        Mockito.verify(studentRepository).findById(student.getId());
+        Mockito.verify(studentRepository, Mockito.times(2)).findById(student.getId());
         Mockito.verify(learningItemRepository).findById(learningItem.getId());
         Mockito.verify(assignmentRepository).findById(assignment.getId());
         Mockito.verify(assignmentRepository).findByStudent_IdAndStatus(student.getId(), AssignmentStatus.COMPLETED);
@@ -211,7 +211,7 @@ public class AssignmentServiceTest {
         assertEquals(1, reloaded.size());
         assertEquals(AssignmentStatus.COMPLETED, reloaded.get(0).getStatus());
 
-        Mockito.verify(studentRepository).findById(student.getId());
+        Mockito.verify(studentRepository, Mockito.times(2)).findById(student.getId());
         Mockito.verify(learningItemRepository).findById(learningItem.getId());
         Mockito.verify(assignmentRepository).findById(assignment.getId());
         Mockito.verify(assignmentRepository).findByStudent_IdAndStatus(student.getId(), AssignmentStatus.COMPLETED);

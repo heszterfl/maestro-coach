@@ -44,8 +44,6 @@ public class StudentController {
     @GetMapping("/{studentId}/assignments")
     public List<AssignmentResponse> listAssignmentsByStudent(@PathVariable UUID studentId, @RequestParam(required = false) AssignmentStatus status) {
 
-        studentService.getStudentById(studentId);
-
         List<Assignment> assignmentList;
         if (status == null) {
             assignmentList = assignmentService.getAssignmentsByStudent(studentId);

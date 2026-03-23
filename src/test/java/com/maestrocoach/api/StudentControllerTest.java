@@ -101,8 +101,6 @@ class StudentControllerTest {
         Assignment a1 = new Assignment(s, learningItem1);
         Assignment a2 = new Assignment(s, learningItem2);
 
-        Mockito.when(service.getStudentById(s.getId()))
-                .thenReturn(s);
         Mockito.when(assignmentService.getAssignmentsByStudent(s.getId()))
                 .thenReturn(List.of(a1, a2));
 
@@ -118,18 +116,21 @@ class StudentControllerTest {
                 .andExpect(jsonPath("$[1].learningItemId").value(a2.getLearningItem().getId().toString()))
                 .andExpect(jsonPath("$[1].status").value("ASSIGNED"));
 
+        Mockito.verify(assignmentService).getAssignmentsByStudent(s.getId());
     }
 
     @Test
     void getAssignmentsByStudent_studentNotFound_returns404() throws Exception {
         UUID studentId = UUID.randomUUID();
 
-        Mockito.when(service.getStudentById(studentId))
+        Mockito.when(assignmentService.getAssignmentsByStudent(studentId))
                 .thenThrow(new ResourceNotFoundException("Student not found with id: " + studentId));
 
         mockMvc.perform(get("/api/students/{studentId}/assignments", studentId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Student not found with id: " + studentId));
+
+        Mockito.verify(assignmentService).getAssignmentsByStudent(studentId);
     }
 
     @Test
@@ -139,9 +140,6 @@ class StudentControllerTest {
         LearningItem learningItem2 = new LearningItem("F-Dúr Etűd", INSTRUMENT_PRACTICE, null);
         Assignment a1 = new Assignment(s, learningItem1);
         Assignment a2 = new Assignment(s, learningItem2);
-
-        Mockito.when(service.getStudentById(s.getId()))
-                        .thenReturn(s);
 
         Mockito.when(assignmentService.getAssignmentsByStudent(s.getId(), AssignmentStatus.ASSIGNED))
                 .thenReturn(List.of(a1, a2));
@@ -162,9 +160,6 @@ class StudentControllerTest {
         Assignment a2 = new Assignment(s, learningItem2);
         a1.markCompleted();
         a2.markCompleted();
-
-        Mockito.when(service.getStudentById(s.getId()))
-                .thenReturn(s);
 
         Mockito.when(assignmentService.getAssignmentsByStudent(s.getId(), AssignmentStatus.COMPLETED))
                 .thenReturn(List.of(a1, a2));

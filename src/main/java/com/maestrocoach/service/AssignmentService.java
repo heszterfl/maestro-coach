@@ -37,10 +37,16 @@ public class AssignmentService {
     }
 
     public List<Assignment> getAssignmentsByStudent(UUID studentId) {
+        studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
         return assignmentRepository.findByStudent_Id(studentId);
     }
 
     public List<Assignment> getAssignmentsByStudent(UUID studentId, AssignmentStatus status) {
+        studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
         return assignmentRepository.findByStudent_IdAndStatus(studentId, status);
     }
 
