@@ -27,34 +27,44 @@ public class AssignmentService {
     }
 
     public Assignment createAssignment(UUID studentId, UUID learningItemId) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
-        LearningItem learningItem = learningItemRepository.findById(learningItemId)
-                .orElseThrow(() -> new ResourceNotFoundException("Learning item not found with id: " + learningItemId));
+        Student student = findStudentOrThrow(studentId);
+        LearningItem learningItem = findLearningItemOrThrow(learningItemId);
 
         Assignment assignment = new Assignment(student, learningItem);
         return assignmentRepository.save(assignment);
     }
 
     public List<Assignment> getAssignmentsByStudent(UUID studentId) {
-        studentRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+        findStudentOrThrow(studentId);
 
         return assignmentRepository.findByStudent_Id(studentId);
     }
 
     public List<Assignment> getAssignmentsByStudent(UUID studentId, AssignmentStatus status) {
-        studentRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+        findStudentOrThrow(studentId);
 
         return assignmentRepository.findByStudent_IdAndStatus(studentId, status);
     }
 
     public void completeAssignment(UUID assignmentId) {
-        Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
+        Assignment assignment = findAssignmentOrThrow(assignmentId);
 
         assignment.markCompleted();
         assignmentRepository.save(assignment);
+    }
+
+    private Student findStudentOrThrow(UUID studentId) {
+        return studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+    }
+
+    private LearningItem findLearningItemOrThrow(UUID learningItemId) {
+        return learningItemRepository.findById(learningItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Learning item not found with id: " + learningItemId));
+    }
+
+    private Assignment findAssignmentOrThrow(UUID assignmentId) {
+        return assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
     }
 }

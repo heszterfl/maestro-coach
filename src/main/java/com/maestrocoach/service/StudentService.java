@@ -27,25 +27,29 @@ public class StudentService {
     }
 
     public void assignStudentToTeacher(UUID studentId, UUID teacherId) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
-
-        Teacher teacher = teacherRepository.findById(teacherId)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherId));
+        Student student = findStudentOrThrow(studentId);
+        Teacher teacher = findTeacherOrThrow(teacherId);
 
         student.assignTeacher(teacher);
         studentRepository.save(student);
     }
 
     public List<Student> getStudentsByTeacher(UUID teacherId) {
-        Teacher teacher = teacherRepository.findById(teacherId)
-                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherId));
-
+        findTeacherOrThrow(teacherId);
         return studentRepository.findByTeacher_Id(teacherId);
     }
 
     public Student getStudentById(UUID studentId) {
+        return findStudentOrThrow(studentId);
+    }
+
+    private Student findStudentOrThrow(UUID studentId) {
         return studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+    }
+
+    private Teacher findTeacherOrThrow(UUID teacherId) {
+        return teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherId));
     }
 }
