@@ -1,5 +1,6 @@
 package com.maestrocoach.api;
 
+import com.maestrocoach.api.error.ResourceNotFoundException;
 import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
 import com.maestrocoach.service.StudentService;
@@ -14,7 +15,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -85,24 +85,22 @@ class TeacherControllerTest {
     }
 
     @Test
-    void teacherIdNotInStoreReturnsNotFound() throws Exception {
+    void getTeacherById_teacherNotFound_returns404() throws Exception {
         UUID randomId = UUID.randomUUID();
 
         Mockito.when(service.getTeacherById(randomId))
-                .thenReturn(Optional.empty());
+                .thenThrow(new ResourceNotFoundException("Teacher not found with id: " + randomId));
 
         mockMvc.perform(get("/api/teachers/{teacherId}", randomId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Teacher not found with id: " + randomId));
     }
 
     @Test
-    void getStudentsByTeacher_success() throws Exception {
+    void getStudentsByTeacher_returns200AndList() throws Exception {
         Teacher t = new Teacher("John Doe", "john@school.com");
         Student s1 = new Student("Anna Bellman", "anna@bellman.com", "piano");
         Student s2 = new Student("Emma Schmidt", "emma@schmidt.com", "piano");
-
-        Mockito.when(service.getTeacherById(t.getId()))
-                .thenReturn(Optional.of(t));
 
         s1.assignTeacher(t);
         s2.assignTeacher(t);
@@ -126,13 +124,26 @@ class TeacherControllerTest {
     }
 
     @Test
-    void getStudentsByTeacher_returnsNotFound() throws Exception {
+    void getStudentsByTeacher_teacherExistsButNoStudents_returns200AndEmptyList() throws Exception {
+        Teacher t = new Teacher("John Doe", "john@school.com");
+
+        Mockito.when(studentService.getStudentsByTeacher(t.getId()))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get("/api/teachers/{teacherId}/students", t.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void getStudentsByTeacher_teacherNotFound_returns404() throws Exception {
         UUID randomId = UUID.randomUUID();
 
-        Mockito.when(service.getTeacherById(randomId))
-                .thenReturn(Optional.empty());
+        Mockito.when(studentService.getStudentsByTeacher(randomId))
+                .thenThrow(new ResourceNotFoundException("Teacher not found with id: " + randomId));
 
         mockMvc.perform(get("/api/teachers/{teacherId}/students", randomId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Teacher not found with id: " + randomId));
     }
 }

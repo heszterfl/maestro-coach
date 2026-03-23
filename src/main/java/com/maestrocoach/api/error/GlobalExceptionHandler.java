@@ -11,9 +11,9 @@ import org.springframework.web.server.ResponseStatusException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiErrorResponse> handleNotFound(IllegalArgumentException ex, HttpServletRequest req) {
-        ApiErrorResponse body = new ApiErrorResponse("Resource not found", HttpStatus.NOT_FOUND.value(), req.getRequestURI());
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest req) {
+        ApiErrorResponse body = new ApiErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value(), req.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 

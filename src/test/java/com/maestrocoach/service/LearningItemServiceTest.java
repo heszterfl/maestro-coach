@@ -1,5 +1,6 @@
 package com.maestrocoach.service;
 
+import com.maestrocoach.api.error.ResourceNotFoundException;
 import com.maestrocoach.domain.LearningItem;
 import com.maestrocoach.persistence.InMemoryLearningItemStore;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,6 @@ public class LearningItemServiceTest {
 
         UUID randomId = UUID.randomUUID();
 
-        assertThrows(IllegalArgumentException.class, () -> service.deleteLearningItem(randomId));
+        assertThrows(ResourceNotFoundException.class, () -> service.deleteLearningItem(randomId));
     }
 }

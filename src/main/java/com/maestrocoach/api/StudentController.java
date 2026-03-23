@@ -11,7 +11,6 @@ import com.maestrocoach.service.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,9 +44,7 @@ public class StudentController {
     @GetMapping("/{studentId}/assignments")
     public List<AssignmentResponse> listAssignmentsByStudent(@PathVariable UUID studentId, @RequestParam(required = false) AssignmentStatus status) {
 
-        if (studentService.getStudentById(studentId).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
-        }
+        studentService.getStudentById(studentId);
 
         List<Assignment> assignmentList;
         if (status == null) {

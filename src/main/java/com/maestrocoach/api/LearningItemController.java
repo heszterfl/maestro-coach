@@ -7,7 +7,6 @@ import com.maestrocoach.service.LearningItemService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +42,7 @@ public class LearningItemController {
 
     @GetMapping("/{learningItemId}")
     public LearningItemResponse getLearningItemById(@PathVariable UUID learningItemId) {
-        LearningItem item = service.getLearningItemById(learningItemId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Learning item not found"));
+        LearningItem item = service.getLearningItemById(learningItemId);
         return new LearningItemResponse(item.getId(), item.getTitle(), item.getCategory(), item.getDescription());
     }
 

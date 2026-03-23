@@ -1,12 +1,12 @@
 package com.maestrocoach.service;
 
+import com.maestrocoach.api.error.ResourceNotFoundException;
 import com.maestrocoach.domain.LearningCategory;
 import com.maestrocoach.domain.LearningItem;
 import com.maestrocoach.persistence.InMemoryLearningItemStore;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,8 +23,9 @@ public class LearningItemService {
         return store.save(item);
     }
 
-    public Optional<LearningItem> getLearningItemById(UUID id) {
-        return store.findById(id);
+    public LearningItem getLearningItemById(UUID id) {
+        return store.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Learning item not found with id: " + id));
     }
 
     public List<LearningItem> getAllLearningItems() {
@@ -33,7 +34,7 @@ public class LearningItemService {
 
     public void deleteLearningItem(UUID id) {
         if (store.findById(id).isEmpty()) {
-            throw new IllegalArgumentException();
+            throw new ResourceNotFoundException("Learning item not found with id: " + id);
         }
 
         store.deleteById(id);

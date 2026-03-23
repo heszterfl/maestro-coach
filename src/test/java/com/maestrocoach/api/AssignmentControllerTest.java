@@ -1,5 +1,6 @@
 package com.maestrocoach.api;
 
+import com.maestrocoach.api.error.ResourceNotFoundException;
 import com.maestrocoach.domain.Assignment;
 import com.maestrocoach.domain.LearningItem;
 import com.maestrocoach.domain.Student;
@@ -72,10 +73,11 @@ public class AssignmentControllerTest {
         jsonObject.put("studentId", student.getId().toString());
         jsonObject.put("learningItemId", learningItem.getId().toString());
 
-        Mockito.doThrow(IllegalArgumentException.class).when(assignmentService).createAssignment(student.getId(), learningItem.getId());
+        Mockito.doThrow(new ResourceNotFoundException("Student not found with id: " + student.getId())).when(assignmentService).createAssignment(student.getId(), learningItem.getId());
 
         mockMvc.perform(post("/api/assignments").contentType(MediaType.APPLICATION_JSON).content(jsonObject.toString()))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Student not found with id: " + student.getId()));
     }
 
     @Test
@@ -92,9 +94,10 @@ public class AssignmentControllerTest {
     void completeAssignment_notFound_returns404() throws Exception {
         UUID randomId = UUID.randomUUID();
 
-        Mockito.doThrow(IllegalArgumentException.class).when(assignmentService).completeAssignment(randomId);
+        Mockito.doThrow(new ResourceNotFoundException("Assignment not found with id: " + randomId)).when(assignmentService).completeAssignment(randomId);
 
         mockMvc.perform(post("/api/assignments/{assignmentId}/complete", randomId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Assignment not found with id: " + randomId));
     }
 }

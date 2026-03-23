@@ -1,5 +1,6 @@
 package com.maestrocoach.api;
 
+import com.maestrocoach.api.error.ResourceNotFoundException;
 import com.maestrocoach.domain.LearningItem;
 import com.maestrocoach.service.LearningItemService;
 import org.json.JSONObject;
@@ -12,7 +13,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.maestrocoach.domain.LearningCategory.INSTRUMENT_PRACTICE;
@@ -90,10 +90,11 @@ class LearningItemControllerTest {
         UUID randomId = UUID.randomUUID();
 
         Mockito.when(service.getLearningItemById(randomId))
-                        .thenReturn(Optional.empty());
+                        .thenThrow(new ResourceNotFoundException("Learning item not found with id: " + randomId));
 
         mockMvc.perform(get("/api/learning-items/{learningItemId}", randomId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Learning item not found with id: " + randomId));
     }
 
     @Test
@@ -110,9 +111,10 @@ class LearningItemControllerTest {
     void deleteLearningItem_notFound_returns404() throws Exception {
         UUID randomId = UUID.randomUUID();
 
-        Mockito.doThrow(IllegalArgumentException.class).when(service).deleteLearningItem(randomId);
+        Mockito.doThrow(new ResourceNotFoundException("Learning item not found with id: " + randomId)).when(service).deleteLearningItem(randomId);
 
         mockMvc.perform(delete("/api/learning-items/{learningItemId}", randomId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Learning item not found with id: " + randomId));
     }
 }

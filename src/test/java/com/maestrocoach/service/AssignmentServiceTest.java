@@ -1,5 +1,6 @@
 package com.maestrocoach.service;
 
+import com.maestrocoach.api.error.ResourceNotFoundException;
 import com.maestrocoach.domain.Assignment;
 import com.maestrocoach.domain.AssignmentStatus;
 import com.maestrocoach.domain.LearningItem;
@@ -66,7 +67,7 @@ public class AssignmentServiceTest {
         Mockito.when(learningItemRepository.findById(learningItem.getId()))
                         .thenReturn(Optional.of(learningItem));
 
-        assertThrows(IllegalArgumentException.class, () -> assignmentService.createAssignment(randomStudentId, learningItem.getId()));
+        assertThrows(ResourceNotFoundException.class, () -> assignmentService.createAssignment(randomStudentId, learningItem.getId()));
 
         Mockito.verify(studentRepository).findById(randomStudentId);
     }
@@ -87,7 +88,7 @@ public class AssignmentServiceTest {
         Mockito.when(learningItemRepository.findById(randomLearningItemId))
                 .thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> assignmentService.createAssignment(student.getId(), randomLearningItemId));
+        assertThrows(ResourceNotFoundException.class, () -> assignmentService.createAssignment(student.getId(), randomLearningItemId));
 
         Mockito.verify(studentRepository).findById(student.getId());
         Mockito.verify(learningItemRepository).findById(randomLearningItemId);
@@ -218,7 +219,7 @@ public class AssignmentServiceTest {
     }
 
     @Test
-    void completeAssignment_notFound_throwsIllegalArgumentException() {
+    void completeAssignment_notFound_throwsResourceNotFoundException() {
         AssignmentRepository assignmentRepository = Mockito.mock(AssignmentRepository.class);
         StudentRepository studentRepository = Mockito.mock(StudentRepository.class);
         LearningItemRepository learningItemRepository = Mockito.mock(LearningItemRepository.class);
@@ -230,7 +231,7 @@ public class AssignmentServiceTest {
         Mockito.when(assignmentRepository.findById(randomId))
                 .thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> assignmentService.completeAssignment(randomId));
+        assertThrows(ResourceNotFoundException.class, () -> assignmentService.completeAssignment(randomId));
 
         Mockito.verify(assignmentRepository).findById(randomId);
     }

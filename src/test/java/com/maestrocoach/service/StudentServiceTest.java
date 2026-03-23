@@ -1,5 +1,6 @@
 package com.maestrocoach.service;
 
+import com.maestrocoach.api.error.ResourceNotFoundException;
 import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
 import com.maestrocoach.repository.StudentRepository;
@@ -7,6 +8,7 @@ import com.maestrocoach.repository.TeacherRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,7 +71,7 @@ public class StudentServiceTest {
     }
 
     @Test
-    void assignStudentToTeacher_studentNotFound_throwsIllegalArgumentException() {
+    void assignStudentToTeacher_studentNotFound_throwsResourceNotFoundException() {
         StudentRepository studentRepository = Mockito.mock(StudentRepository.class);
         TeacherRepository teacherRepository = Mockito.mock(TeacherRepository.class);
 
@@ -84,13 +86,13 @@ public class StudentServiceTest {
         Mockito.when(teacherRepository.findById(teacher.getId()))
                 .thenReturn(Optional.of(teacher));
 
-        assertThrows(IllegalArgumentException.class, () -> studentService.assignStudentToTeacher(randomStudentId, teacher.getId()));
+        assertThrows(ResourceNotFoundException.class, () -> studentService.assignStudentToTeacher(randomStudentId, teacher.getId()));
 
         Mockito.verify(studentRepository).findById(randomStudentId);
     }
 
     @Test
-    void assignStudentToTeacher_teacherNotFound_throwsIllegalArgumentException() {
+    void assignStudentToTeacher_teacherNotFound_throwsResourceNotFoundException() {
         StudentRepository studentRepository = Mockito.mock(StudentRepository.class);
         TeacherRepository teacherRepository = Mockito.mock(TeacherRepository.class);
 
@@ -105,9 +107,85 @@ public class StudentServiceTest {
         Mockito.when(teacherRepository.findById(randomTeacherId))
                 .thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> studentService.assignStudentToTeacher(student.getId(), randomTeacherId));
+        assertThrows(ResourceNotFoundException.class, () -> studentService.assignStudentToTeacher(student.getId(), randomTeacherId));
 
         Mockito.verify(studentRepository).findById(student.getId());
         Mockito.verify(teacherRepository).findById(randomTeacherId);
+    }
+
+    @Test
+    void getStudentsByTeacher_teacherExists_returnsStudents() {
+        StudentRepository studentRepository = Mockito.mock(StudentRepository.class);
+        TeacherRepository teacherRepository = Mockito.mock(TeacherRepository.class);
+
+        StudentService studentService = new StudentService(studentRepository, teacherRepository);
+
+        Teacher teacher = new Teacher("John Doe", "john@school.com");
+        UUID teacherId = teacher.getId();
+        Student student1 = new Student("Anna Bellman", "anna@bellman.com", "piano");
+        Student student2 = new Student("Charlie", "charlie@abc.com", "piano");
+
+        Mockito.when(teacherRepository.findById(teacherId))
+                .thenReturn(Optional.of(teacher));
+
+        Mockito.when(studentRepository.findByTeacher_Id(teacherId))
+                .thenReturn(List.of(student1, student2));
+
+        List<Student> studentList = studentService.getStudentsByTeacher(teacherId);
+
+        assertEquals(2, studentList.size());
+        assertEquals("Anna Bellman", studentList.get(0).getFullName());
+        assertEquals("anna@bellman.com", studentList.get(0).getEmail());
+        assertEquals("piano", studentList.get(0).getInstrument());
+
+        assertEquals("Charlie", studentList.get(1).getFullName());
+        assertEquals("charlie@abc.com", studentList.get(1).getEmail());
+        assertEquals("piano", studentList.get(1).getInstrument());
+
+        Mockito.verify(teacherRepository).findById(teacherId);
+        Mockito.verify(studentRepository).findByTeacher_Id(teacherId);
+    }
+
+    @Test
+    void getStudentsByTeacher_teacherExistsButNoStudents_returnsEmptyList() {
+        StudentRepository studentRepository = Mockito.mock(StudentRepository.class);
+        TeacherRepository teacherRepository = Mockito.mock(TeacherRepository.class);
+
+        StudentService studentService = new StudentService(studentRepository, teacherRepository);
+
+        Teacher teacher = new Teacher("John Doe", "john@school.com");
+        UUID teacherId = teacher.getId();
+
+        Mockito.when(teacherRepository.findById(teacherId))
+                .thenReturn(Optional.of(teacher));
+
+        Mockito.when(studentRepository.findByTeacher_Id(teacherId))
+                .thenReturn(List.of());
+
+        List<Student> studentList = studentService.getStudentsByTeacher(teacherId);
+
+        assertTrue(studentList.isEmpty());
+
+        Mockito.verify(teacherRepository).findById(teacherId);
+        Mockito.verify(studentRepository).findByTeacher_Id(teacherId);
+    }
+
+    @Test
+    void getStudentsByTeacher_teacherNotFound_throwsException() {
+        StudentRepository studentRepository = Mockito.mock(StudentRepository.class);
+        TeacherRepository teacherRepository = Mockito.mock(TeacherRepository.class);
+
+        StudentService studentService = new StudentService(studentRepository, teacherRepository);
+
+        UUID randomId = UUID.randomUUID();
+
+        Mockito.when(teacherRepository.findById(randomId))
+                .thenReturn(Optional.empty());
+
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> studentService.getStudentsByTeacher(randomId));
+
+        assertEquals("Teacher not found with id: " + randomId, ex.getMessage());
+
+        Mockito.verify(studentRepository, Mockito.never()).findByTeacher_Id(Mockito.any());
     }
 }

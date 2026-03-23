@@ -1,5 +1,6 @@
 package com.maestrocoach.service;
 
+import com.maestrocoach.api.error.ResourceNotFoundException;
 import com.maestrocoach.domain.Assignment;
 import com.maestrocoach.domain.AssignmentStatus;
 import com.maestrocoach.domain.LearningItem;
@@ -27,9 +28,9 @@ public class AssignmentService {
 
     public Assignment createAssignment(UUID studentId, UUID learningItemId) {
         Student student = studentRepository.findById(studentId)
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
         LearningItem learningItem = learningItemRepository.findById(learningItemId)
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new ResourceNotFoundException("Learning item not found with id: " + learningItemId));
 
         Assignment assignment = new Assignment(student, learningItem);
         return assignmentRepository.save(assignment);
@@ -45,7 +46,7 @@ public class AssignmentService {
 
     public void completeAssignment(UUID assignmentId) {
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
 
         assignment.markCompleted();
         assignmentRepository.save(assignment);

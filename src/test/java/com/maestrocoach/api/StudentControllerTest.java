@@ -1,5 +1,6 @@
 package com.maestrocoach.api;
 
+import com.maestrocoach.api.error.ResourceNotFoundException;
 import com.maestrocoach.domain.*;
 import com.maestrocoach.service.AssignmentService;
 import com.maestrocoach.service.StudentService;
@@ -13,7 +14,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.maestrocoach.domain.LearningCategory.INSTRUMENT_PRACTICE;
@@ -86,10 +86,11 @@ class StudentControllerTest {
         UUID randomId = UUID.randomUUID();
         Student s = new Student("Anna Bellman", "anna@bellman.com", "piano");
 
-        Mockito.doThrow(IllegalArgumentException.class).when(service).assignStudentToTeacher(s.getId(), randomId);
+        Mockito.doThrow(new ResourceNotFoundException("Teacher not found with id: " + randomId)).when(service).assignStudentToTeacher(s.getId(), randomId);
 
         mockMvc.perform(post("/api/students/{studentId}/assign-teacher/{teacherId}", s.getId(), randomId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Teacher not found with id: " + randomId));
     }
 
     @Test
@@ -101,7 +102,7 @@ class StudentControllerTest {
         Assignment a2 = new Assignment(s, learningItem2);
 
         Mockito.when(service.getStudentById(s.getId()))
-                .thenReturn(Optional.of(s));
+                .thenReturn(s);
         Mockito.when(assignmentService.getAssignmentsByStudent(s.getId()))
                 .thenReturn(List.of(a1, a2));
 
@@ -124,10 +125,11 @@ class StudentControllerTest {
         UUID studentId = UUID.randomUUID();
 
         Mockito.when(service.getStudentById(studentId))
-                .thenReturn(Optional.empty());
+                .thenThrow(new ResourceNotFoundException("Student not found with id: " + studentId));
 
         mockMvc.perform(get("/api/students/{studentId}/assignments", studentId))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Student not found with id: " + studentId));
     }
 
     @Test
@@ -139,7 +141,7 @@ class StudentControllerTest {
         Assignment a2 = new Assignment(s, learningItem2);
 
         Mockito.when(service.getStudentById(s.getId()))
-                        .thenReturn(Optional.of(s));
+                        .thenReturn(s);
 
         Mockito.when(assignmentService.getAssignmentsByStudent(s.getId(), AssignmentStatus.ASSIGNED))
                 .thenReturn(List.of(a1, a2));
@@ -162,7 +164,7 @@ class StudentControllerTest {
         a2.markCompleted();
 
         Mockito.when(service.getStudentById(s.getId()))
-                .thenReturn(Optional.of(s));
+                .thenReturn(s);
 
         Mockito.when(assignmentService.getAssignmentsByStudent(s.getId(), AssignmentStatus.COMPLETED))
                 .thenReturn(List.of(a1, a2));

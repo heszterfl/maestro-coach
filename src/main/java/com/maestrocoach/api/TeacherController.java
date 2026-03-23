@@ -10,7 +10,6 @@ import com.maestrocoach.service.TeacherService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,16 +47,12 @@ public class TeacherController {
 
     @GetMapping("/{teacherId}")
     public TeacherResponse getTeacherById (@PathVariable UUID teacherId) {
-        Teacher teacher = teacherService.getTeacherById(teacherId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found"));
+        Teacher teacher = teacherService.getTeacherById(teacherId);
         return new TeacherResponse(teacher.getId(), teacher.getFullName(), teacher.getEmail());
     }
 
     @GetMapping("/{teacherId}/students")
     public List<StudentResponse> getStudentsByTeacher(@PathVariable UUID teacherId) {
-
-        if (teacherService.getTeacherById(teacherId).isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found");
-        }
 
         List<Student> studentList = studentService.getStudentsByTeacher(teacherId);
         List<StudentResponse> responseList = new ArrayList<>();
