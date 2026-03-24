@@ -7,12 +7,17 @@ import com.maestrocoach.repository.StudentRepository;
 import com.maestrocoach.repository.TeacherRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
 
 public class StudentServiceTest {
 
@@ -125,25 +130,33 @@ public class StudentServiceTest {
         Student student1 = new Student("Anna Bellman", "anna@bellman.com", "piano");
         Student student2 = new Student("Charlie", "charlie@abc.com", "piano");
 
+        Page<Student> studentPage = new PageImpl<>(List.of(student1, student2), PageRequest.of(0, 10), 2);
+
         Mockito.when(teacherRepository.findById(teacherId))
                 .thenReturn(Optional.of(teacher));
 
-        Mockito.when(studentRepository.findByTeacher_Id(teacherId))
-                .thenReturn(List.of(student1, student2));
+        Mockito.when(studentRepository.findByTeacher_Id(eq(teacherId), Mockito.any(Pageable.class)))
+                .thenReturn(studentPage);
 
-        List<Student> studentList = studentService.getStudentsByTeacher(teacherId);
+        Page<Student> studentList = studentService.getStudentsByTeacher(teacherId, 0, 10);
 
-        assertEquals(2, studentList.size());
-        assertEquals("Anna Bellman", studentList.get(0).getFullName());
-        assertEquals("anna@bellman.com", studentList.get(0).getEmail());
-        assertEquals("piano", studentList.get(0).getInstrument());
+        assertEquals(2, studentList.getContent().size());
+        assertEquals("Anna Bellman", studentList.getContent().get(0).getFullName());
+        assertEquals("anna@bellman.com", studentList.getContent().get(0).getEmail());
+        assertEquals("piano", studentList.getContent().get(0).getInstrument());
 
-        assertEquals("Charlie", studentList.get(1).getFullName());
-        assertEquals("charlie@abc.com", studentList.get(1).getEmail());
-        assertEquals("piano", studentList.get(1).getInstrument());
+        assertEquals("Charlie", studentList.getContent().get(1).getFullName());
+        assertEquals("charlie@abc.com", studentList.getContent().get(1).getEmail());
+        assertEquals("piano", studentList.getContent().get(1).getInstrument());
 
         Mockito.verify(teacherRepository).findById(teacherId);
-        Mockito.verify(studentRepository).findByTeacher_Id(teacherId);
+        Mockito.verify(studentRepository).findByTeacher_Id(
+                Mockito.eq(teacherId),
+                Mockito.argThat(pageable ->
+                        pageable.getPageNumber() == 0 &&
+                        pageable.getPageSize() == 10
+                )
+        );
     }
 
     @Test
@@ -156,18 +169,26 @@ public class StudentServiceTest {
         Teacher teacher = new Teacher("John Doe", "john@school.com");
         UUID teacherId = teacher.getId();
 
+        Page<Student> studentPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
+
         Mockito.when(teacherRepository.findById(teacherId))
                 .thenReturn(Optional.of(teacher));
 
-        Mockito.when(studentRepository.findByTeacher_Id(teacherId))
-                .thenReturn(List.of());
+        Mockito.when(studentRepository.findByTeacher_Id(eq(teacherId), Mockito.any(Pageable.class)))
+                .thenReturn(studentPage);
 
-        List<Student> studentList = studentService.getStudentsByTeacher(teacherId);
+        Page<Student> studentList = studentService.getStudentsByTeacher(teacherId, 0, 10);
 
         assertTrue(studentList.isEmpty());
 
         Mockito.verify(teacherRepository).findById(teacherId);
-        Mockito.verify(studentRepository).findByTeacher_Id(teacherId);
+        Mockito.verify(studentRepository).findByTeacher_Id(
+                Mockito.eq(teacherId),
+                Mockito.argThat(pageable ->
+                        pageable.getPageNumber() == 0 &&
+                                pageable.getPageSize() == 10
+                )
+        );
     }
 
     @Test
@@ -182,10 +203,11 @@ public class StudentServiceTest {
         Mockito.when(teacherRepository.findById(randomId))
                 .thenReturn(Optional.empty());
 
-        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> studentService.getStudentsByTeacher(randomId));
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> studentService.getStudentsByTeacher(randomId, 0, 10));
 
         assertEquals("Teacher not found with id: " + randomId, ex.getMessage());
 
-        Mockito.verify(studentRepository, Mockito.never()).findByTeacher_Id(Mockito.any());
+        Mockito.verify(studentRepository, Mockito.never())
+                .findByTeacher_Id(Mockito.any(UUID.class), Mockito.any(Pageable.class));
     }
 }

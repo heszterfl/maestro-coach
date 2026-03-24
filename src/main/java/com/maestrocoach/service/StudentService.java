@@ -5,9 +5,11 @@ import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
 import com.maestrocoach.repository.StudentRepository;
 import com.maestrocoach.repository.TeacherRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -34,9 +36,12 @@ public class StudentService {
         studentRepository.save(student);
     }
 
-    public List<Student> getStudentsByTeacher(UUID teacherId) {
+    public Page<Student> getStudentsByTeacher(UUID teacherId, int page, int size) {
         findTeacherOrThrow(teacherId);
-        return studentRepository.findByTeacher_Id(teacherId);
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return studentRepository.findByTeacher_Id(teacherId, pageable);
     }
 
     public Student getStudentById(UUID studentId) {

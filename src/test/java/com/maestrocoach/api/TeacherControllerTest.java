@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -105,41 +108,53 @@ class TeacherControllerTest {
         s1.assignTeacher(t);
         s2.assignTeacher(t);
 
-        Mockito.when(studentService.getStudentsByTeacher(t.getId()))
-                .thenReturn(List.of(s1, s2));
+        Page<Student> studentPage = new PageImpl<>(List.of(s1, s2), PageRequest.of(0, 10), 2);
+
+        Mockito.when(studentService.getStudentsByTeacher(t.getId(), 0, 10))
+                .thenReturn(studentPage);
 
         mockMvc.perform(get("/api/teachers/{teacherId}/students", t.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].id").value(s1.getId().toString()))
-                .andExpect(jsonPath("$[0].fullName").value("Anna Bellman"))
-                .andExpect(jsonPath("$[0].email").value("anna@bellman.com"))
-                .andExpect(jsonPath("$[0].instrument").value("piano"))
-                .andExpect(jsonPath("$[0].teacherId").value(t.getId().toString()))
-                .andExpect(jsonPath("$[1].id").value(s2.getId().toString()))
-                .andExpect(jsonPath("$[1].fullName").value("Emma Schmidt"))
-                .andExpect(jsonPath("$[1].email").value("emma@schmidt.com"))
-                .andExpect(jsonPath("$[1].instrument").value("piano"))
-                .andExpect(jsonPath("$[1].teacherId").value(t.getId().toString()));
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].id").value(s1.getId().toString()))
+                .andExpect(jsonPath("$.content[0].fullName").value("Anna Bellman"))
+                .andExpect(jsonPath("$.content[0].email").value("anna@bellman.com"))
+                .andExpect(jsonPath("$.content[0].instrument").value("piano"))
+                .andExpect(jsonPath("$.content[0].teacherId").value(t.getId().toString()))
+                .andExpect(jsonPath("$.content[1].id").value(s2.getId().toString()))
+                .andExpect(jsonPath("$.content[1].fullName").value("Emma Schmidt"))
+                .andExpect(jsonPath("$.content[1].email").value("emma@schmidt.com"))
+                .andExpect(jsonPath("$.content[1].instrument").value("piano"))
+                .andExpect(jsonPath("$.content[1].teacherId").value(t.getId().toString()))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1));
     }
 
     @Test
     void getStudentsByTeacher_teacherExistsButNoStudents_returns200AndEmptyList() throws Exception {
         Teacher t = new Teacher("John Doe", "john@school.com");
 
-        Mockito.when(studentService.getStudentsByTeacher(t.getId()))
-                .thenReturn(List.of());
+        Page<Student> studentPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
+
+        Mockito.when(studentService.getStudentsByTeacher(t.getId(), 0, 10))
+                .thenReturn(studentPage);
 
         mockMvc.perform(get("/api/teachers/{teacherId}/students", t.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.content", hasSize(0)))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0));
     }
 
     @Test
     void getStudentsByTeacher_teacherNotFound_returns404() throws Exception {
         UUID randomId = UUID.randomUUID();
 
-        Mockito.when(studentService.getStudentsByTeacher(randomId))
+        Mockito.when(studentService.getStudentsByTeacher(randomId, 0, 10))
                 .thenThrow(new ResourceNotFoundException("Teacher not found with id: " + randomId));
 
         mockMvc.perform(get("/api/teachers/{teacherId}/students", randomId))

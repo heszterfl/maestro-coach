@@ -1,12 +1,15 @@
 package com.maestrocoach.api;
 
 import com.maestrocoach.api.dto.CreateTeacherRequest;
+import com.maestrocoach.api.dto.PagedResponse;
 import com.maestrocoach.api.dto.StudentResponse;
 import com.maestrocoach.api.dto.TeacherResponse;
+import com.maestrocoach.domain.Student;
 import com.maestrocoach.domain.Teacher;
 import com.maestrocoach.service.StudentService;
 import com.maestrocoach.service.TeacherService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,9 +54,15 @@ public class TeacherController {
     }
 
     @GetMapping("/{teacherId}/students")
-    public List<StudentResponse> getStudentsByTeacher(@PathVariable UUID teacherId) {
+    public PagedResponse<StudentResponse> getStudentsByTeacher(
+            @PathVariable UUID teacherId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
 
-        return studentService.getStudentsByTeacher(teacherId).stream()
+        Page<Student> studentPage = studentService.getStudentsByTeacher(teacherId, page, size);
+
+        List<StudentResponse> studentList = studentPage.getContent().stream()
                 .map(s -> new StudentResponse(
                         s.getId(),
                         s.getFullName(),
@@ -62,6 +71,14 @@ public class TeacherController {
                         s.getTeacher() != null ? s.getTeacher().getId() : null
                 ))
                 .toList();
+
+        return new PagedResponse<>(
+                studentList,
+                studentPage.getNumber(),
+                studentPage.getSize(),
+                studentPage.getTotalElements(),
+                studentPage.getTotalPages()
+        );
     }
 
 }
