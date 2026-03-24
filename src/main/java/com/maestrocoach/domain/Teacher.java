@@ -20,7 +20,7 @@ public class Teacher {
     @Column(nullable = false)
     private String email;
 
-    @Transient
+    @OneToMany(mappedBy = "teacher")
     private List<Student> students;
 
     public Teacher() {

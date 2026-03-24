@@ -2,7 +2,7 @@ package com.maestrocoach.service;
 
 import com.maestrocoach.api.error.ResourceNotFoundException;
 import com.maestrocoach.domain.Teacher;
-import com.maestrocoach.persistence.InMemoryTeacherStore;
+import com.maestrocoach.repository.TeacherRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,23 +11,23 @@ import java.util.UUID;
 @Service
 public class TeacherService {
 
-    private final InMemoryTeacherStore teacherStore;
+    private final TeacherRepository teacherRepository;
 
-    public TeacherService(InMemoryTeacherStore teacherStore) {
-        this.teacherStore = teacherStore;
+    public TeacherService(TeacherRepository teacherRepository) {
+        this.teacherRepository = teacherRepository;
     }
 
     public Teacher createTeacher(String fullName, String email) {
         Teacher newTeacher = new Teacher(fullName, email);
-        return teacherStore.save(newTeacher);
+        return teacherRepository.save(newTeacher);
     }
 
     public Teacher getTeacherById(UUID teacherId) {
-        return teacherStore.findById(teacherId)
+        return teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherId));
     }
 
     public List<Teacher> getAllTeachers() {
-        return teacherStore.findAll();
+        return teacherRepository.findAll();
     }
 }
